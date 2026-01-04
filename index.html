@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MoodFlix | coz choosing movie to watch is hard at times </title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f8f8f8;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      width: 800px; /* Adjust width as needed */
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    /* Day of the Week */
+    .day-of-week button {
+      background-color: #f0f0f0;
+      border: none;
+      padding: 10px 30px;
+      border-radius: 5px;
+      margin-right: 5px;
+      cursor: pointer;
+    }
+
+    .day-of-week button.active {
+      background-color: #6a5acd; /* Purple */
+      color: #fff;
+    }
+
+    /* Mood */
+    .mood {
+      display: flex;
+      flex-direction: column;
+      padding-block: 10px;
+    }
+
+    .mood-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .mood button {
+      background-color: #f0f0f0;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+
+    .mood button span:first-child {
+      font-size: 24px;
+      margin-right: 5px;
+    }
+
+    .mood button img {
+      width: 24px;
+      height: 24px;
+      margin-right: 5px;
+    }
+
+    .mood button.active {
+      background-color: #6a5acd; /* Purple */
+      color: #fff;
+    }
+
+    /* Attention Span and Subtitles */
+    .toggle-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .toggle-option span {
+      font-weight: bold;
+    }
+
+    .toggle-option label {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+
+    .toggle-option input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    .toggle-option input:checked+.slider {
+      background-color: #6a5acd; /* Purple */
+    }
+
+    .toggle-option input:focus+.slider {
+      box-shadow: 0 0 1px #6a5acd; /* Purple */
+    }
+
+    .toggle-option input:checked+.slider:before {
+      -webkit-transform: translateX(26px);
+      -ms-transform: translateX(26px);
+      transform: translateX(26px);
+    }
+
+    /* Get Recommendations Button */
+    #get-recommendations {
+      background-color: #6a5acd;
+      /* Purple */
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    #get-recommendations:hover {
+      background-color: #5542aa;
+      /* Darker purple */
+    }
+
+    #get-recommendations:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* Recommendations */
+    #recommendations {
+      margin-top: 20px;
+      display: flex;
+      overflow-x: auto;
+      gap: 20px;
+    }
+
+    .movie-tile {
+      flex: 0 0 auto;
+      width: 300px; /* Adjust width as needed */
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .movie-tile img {
+      width: 100%;
+      height: 250px; /* Adjust height as needed */
+      object-fit: contain;
+    }
+
+    .movie-tile .info {
+      padding: 15px;
+      font-size: 12px; /* Set font size to 12px */
+    }
+
+    .movie-tile h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .movie-tile p {
+      margin-bottom: 5px;
+      color: #666;
+    }
+
+    .movie-tile .type-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: #ffc107; /* Yellow */
+      color: #333;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .platforms {
+      background-color: #f0f0f0;
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: #333;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        width: 100%;
+        padding: 20px;
+      }
+
+      .movie-tile {
+        width: 100%;
+      }
+
+      .movie-tile img {
+        height: auto;
+      }
+
+      .mood-buttons {
+        overflow-x: auto;
+      }
+
+      .day-of-week button, .mood button {
+        padding: 8px 10px;
+        margin-right: 3px;
+      }
+
+      .toggle-option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .toggle-option span {
+        margin-bottom: 5px;
+      }
+
+      #get-recommendations {
+        width: 100%;
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        width: 100%;
+        padding: 15px;
+      }
+
+      .movie-tile {
+        width: 100%;
+      }
+
+      .movie-tile img {
+        height: auto;
+      }
+
+      .mood-buttons {
+        overflow-x: auto;
+      }
+
+      .day-of-week button, .mood button {
+        padding: 6px 8px;
+        margin-right: 2px;
+      }
+
+      .toggle-option {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .toggle-option span {
+        margin-bottom: 5px;
+      }
+
+      #get-recommendations {
+        width: 100%;
+        padding: 8px;
+      }
+    }
+
+    .header {
+      width: 820px; /* Match the container width */
+      background-color: #ffffff; /* White */
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start; /* Center the title */
+      box-shadow: 0 2px 5px rgba(145, 144, 144, 0.1);
+      border-radius: 10px; /* Match the container border radius */
+    }
+
+    .header h1 {
+      color: #6a5acd; /* Purple */
+      margin: 0;
+      font-size: 24px;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        width: 100%;
+      }
+
+      .header h1 {
+        font-size: 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header {
+        width: 100%;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+    }
+
+    .footer p {
+      color: #6a5acd; /* Purple */
+      margin: 0;
+      font-size: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .footer {
+        width: 100%;
+      }
+
+      .footer p {
+        font-size: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .footer {
+        width: 100%;
+      }
+
+      .footer p {
+        font-size: 8px;
+      }
+    }
+
+    .footer-text {
+      text-align: right;
+      color: #6a5acd; /* Purple */
+      font-size: 12px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-text {
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .footer-text {
+        font-size: 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>MoodFlix</h1>
+  </div>
+  <div class="container">
+    <h2>Find Your Perfect Watch</h2>
+
+    <div class="options">
+      <div class="day-of-week">
+        <h3>Day of the Week:</h3>
+        <button>Mon</button>
+        <button>Tue</button>
+        <button>Wed</button>
+        <button>Thu</button>
+        <button>Fri</button>
+        <button>Sat</button>
+        <button>Sun</button>
+      </div>
+
+      <div class="mood">
+        <h3>Mood:</h3>
+        <div class="mood-buttons">
+          <button>
+            <span>😀</span>
+            <span>Happy</span>
+          </button>
+          <button>
+            <span>😢</span>
+            <span>Sad</span>
+          </button>
+          <button>
+            <span>🤠</span>
+            <span>Adventurous</span>
+          </button>
+          <button>
+            <span>😌</span>
+            <span>Relaxed</span>
+          </button>
+          <button>
+            <span>😟</span>
+            <span>Anxious</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="toggle-option">
+        <span>Long Attention Span</span>
+        <label class="switch">
+          <input type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <div class="toggle-option">
+        <span>Subtitles</span>
+        <label class="switch">
+          <input type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+
+    <button id="get-recommendations" disabled>Get Recommendations</button>
+
+    <div id="recommendations"></div>
+    <p class="footer-text">2025. Personal project of Tutu</p>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.options button');
+    const getRecommendationsButton = document.getElementById('get-recommendations');
+    const recommendationsDiv = document.getElementById('recommendations');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from other buttons in the same group
+        const parent = button.parentNode;
+        if (parent.classList.contains('day-of-week') || parent.classList.contains('mood-buttons')) {
+          parent.querySelectorAll('button').forEach(otherButton => {
+            otherButton.classList.remove('active');
+          });
+        }
+
+        // Add active class to the clicked button
+        button.classList.add('active');
+
+        // Check if all factors are selected
+        checkAllFactorsSelected();
+      });
+    });
+
+    function checkAllFactorsSelected() {
+      const dayOfWeekSelected = document.querySelector('.day-of-week button.active') !== null;
+      const moodSelected = document.querySelector('.mood button.active') !== null;
+      const allFactorsSelected = dayOfWeekSelected && moodSelected;
+
+      if (allFactorsSelected) {
+        getRecommendationsButton.classList.add('enabled');
+        getRecommendationsButton.disabled = false;
+      } else {
+        getRecommendationsButton.classList.remove('enabled');
+        getRecommendationsButton.disabled = true;
+      }
+    }
+
+    function displayRecommendations(recommendations) {
+      recommendationsDiv.innerHTML = ''; // Clear previous recommendations
+
+      if (recommendations.length === 0) {
+        recommendationsDiv.textContent = "No recommendations found.";
+        return;
+      }
+
+      recommendations.forEach(movie => {
+        const movieTile = document.createElement('div');
+        movieTile.classList.add('movie-tile');
+
+        // Add type tag
+        const typeTag = document.createElement('div');
+        typeTag.classList.add('type-tag');
+        typeTag.textContent = movie.type;
+        movieTile.appendChild(typeTag);
+
+        // Add poster image (if available)
+        if (movie.poster) {
+          const posterImg = document.createElement('img');
+          posterImg.src = movie.poster;
+          posterImg.alt = `${movie.title} poster`;
+          movieTile.appendChild(posterImg);
+        }
+
+        const infoDiv = document.createElement('div');
+        infoDiv.classList.add('info');
+
+        // Add title and year
+        const titleHeading = document.createElement('h3');
+        titleHeading.textContent = `${movie.title} (${movie.year})`;
+        infoDiv.appendChild(titleHeading);
+
+        // Add total seasons if available
+        if (movie.totalSeasons) {
+          const seasonsParagraph = document.createElement('p');
+          seasonsParagraph.textContent = `Total Seasons: ${movie.totalSeasons}`;
+          infoDiv.appendChild(seasonsParagraph);
+        }
+
+        // Add runtime
+        const runtimeDiv = document.createElement('div');
+        runtimeDiv.style.position = 'absolute';
+        runtimeDiv.style.top = '10px';
+        runtimeDiv.style.right = '10px';
+        runtimeDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        runtimeDiv.style.color = '#fff';
+        runtimeDiv.style.padding = '5px 5px';
+        runtimeDiv.style.borderRadius = '5px';
+        runtimeDiv.style.fontSize = '12px'; // Adjust font size as needed
+        runtimeDiv.style.fontWeight = 'bold'; // Make font bold
+        runtimeDiv.textContent = movie.runtime;
+        movieTile.appendChild(runtimeDiv);
+
+        // Add plot
+        const plotParagraph = document.createElement('p');
+        plotParagraph.textContent = movie.plot;
+        infoDiv.appendChild(plotParagraph);
+
+        // Add platforms
+        const platformsParagraph = document.createElement('p');
+        platformsParagraph.classList.add('platforms');
+        platformsParagraph.textContent = `Available on: ${movie.platforms.join(', ')}`;
+        infoDiv.appendChild(platformsParagraph);
+
+        movieTile.appendChild(infoDiv);
+
+        recommendationsDiv.appendChild(movieTile);
+      });
+    }
+
+    getRecommendationsButton.addEventListener('click', () => {
+      // Get selected values
+      const dayOfWeek = document.querySelector('.day-of-week button.active').textContent;
+      const mood = document.querySelector('.mood button.active').textContent.trim(); // Trim whitespace from mood
+      const attentionSpan = document.querySelector('.toggle-option:nth-child(3) input').checked ? 'Long' : 'Short';
+      const subtitles = document.querySelector('.toggle-option:nth-child(4) input').checked;
+
+      // Construct the URL with query parameters
+      const baseUrl = window.location.hostname === 'localhost' ? 'http://127.0.0.1:5000' : 'https://moodflix-tau.vercel.app';
+      const apiUrl = `${baseUrl}/get_recommendations?dayOfWeek=${dayOfWeek}&mood=${mood}&attentionSpan=${attentionSpan}&subtitles=${subtitles}`;
+
+      // Make the API call
+      fetch(apiUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(recommendations => {
+          displayRecommendations(recommendations);
+        })
+        .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+          recommendationsDiv.textContent = "Error fetching recommendations.";
+        });
+    });
+  </script>
+</body>
+
+</html>

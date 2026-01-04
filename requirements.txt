@@ -1,0 +1,5 @@
+Flask
+flask-cors
+google-generativeai
+requests
+beautifulsoup4
